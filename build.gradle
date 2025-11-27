@@ -1,0 +1,66 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.gradleup.shadow' version '9.2.2'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    flinkShadowJar {
+        exclude group: 'org.apache.flink'
+        exclude group: 'org.slf4j'
+        exclude group: 'log4j'
+    }
+}
+
+dependencies {
+    // flink dependencies
+    implementation 'org.apache.flink:flink-streaming-java:2.1.1'
+    implementation 'org.apache.flink:flink-clients:2.1.1'
+    implementation 'org.apache.flink:flink-connector-kafka:4.0.1-2.0'
+    implementation 'org.apache.flink:flink-connector-base:2.1.1'
+
+    // Add Kafka connector to shadow jar configuration
+    flinkShadowJar 'org.apache.flink:flink-connector-base:2.1.1'
+    flinkShadowJar 'org.apache.flink:flink-connector-kafka:4.0.1-2.0'
+    flinkShadowJar 'com.fasterxml.jackson.core:jackson-databind:2.20.0'
+    
+    // tests dependencies
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+application {
+    mainClass = 'org.example.Main'
+}
+
+shadowJar {
+    configurations = [project.configurations.flinkShadowJar, project.configurations.runtimeClasspath]
+    archiveClassifier = 'fat'
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'org.example.Main'
+    }
+}
+
+jar {
+    archiveClassifier = ''
+    manifest {
+        attributes 'Main-Class': 'org.example.Main'
+    }
+}
+
+tasks.build {
+    dependsOn jar
+}
+
+test {
+    useJUnitPlatform()
+}
