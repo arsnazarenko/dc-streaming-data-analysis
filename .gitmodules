@@ -1,4 +1,4 @@
-[submodule "dc_genetator"]
-	path = dc_genetator
-	url = git@github.com:arsnazarenko/dc_genetator.git
+[submodule "dc_generator"]
+	path = dc_generator
+	url = git@github.com:arsnazarenko/dc_generator.git
 	branch = main
