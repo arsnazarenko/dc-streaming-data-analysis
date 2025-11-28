@@ -1,0 +1,4 @@
+[submodule "dc_genetator"]
+	path = dc_genetator
+	url = git@github.com:arsnazarenko/dc_genetator.git
+	branch = main

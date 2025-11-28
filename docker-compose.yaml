@@ -64,8 +64,8 @@ services:
 
   # DataCenter metrics generator for dc_metrics topic
   dc-generator:
-    build: ./dc-generator
-    container_name: dc-generator
+    build: ./dc_generator
+    container_name: dc_generator
     depends_on:
       kafka:
         condition: service_healthy
