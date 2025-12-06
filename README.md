@@ -43,3 +43,27 @@
 | Метрики (каждое событие)                | Средняя-высокая  | **at-least-once** |
 | Алёрты (события пороговых срабатываний) | **Критичная** – пропуск алёрта равен пропуску инцидента                                      | **exactly-once** |
 | Отчёты / тренды                         | Низкая – могут быть пересчитаны                                                              | **at-least once**|
+
+
+# Запуск
+
+1. Clone repo:
+```bash
+git clone --recurse-submodules git@github.com:arsnazarenko/dc-streaming-data-analysis.git
+```
+
+2. Run docker compose:
+```bash
+docker compose up
+```
+
+3. Connect to UI:
+
+> Kafka UI: http://localhost:8080
+
+> Flink Web Dashboard: http://localhost:8081
+
+4. Stop docker compose:
+```bash
+docker compose down
+```
