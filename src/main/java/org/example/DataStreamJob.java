@@ -29,7 +29,7 @@ import java.util.Map;
 
 public class DataStreamJob {
     
-    private static final String KAFKA_BROKERS = "kafka:9092";
+    private static final String KAFKA_BROKERS = "kafka1:9092,kafka2:9092,kafka3:9092";
     private static final String METRICS_TOPIC = "dc_metrics";
     private static final String ALERTS_TOPIC = "dc_alerts";
     private static final String HOST_STATUS_TOPIC = "dc_host_status";
@@ -157,13 +157,12 @@ private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() 
     private static KafkaSink<Tuple2<String, Double>> createCpuTrendSink() {
         return KafkaSink.<Tuple2<String, Double>>builder()
                 .setBootstrapServers(KAFKA_BROKERS)
-                .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
+                // .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                         .setTopic(CPU_TREND_TOPIC)
                         .setKeySerializationSchema(new CpuTrendKeySerializer())
                         .setValueSerializationSchema(new CpuTrendSerializer())
                         .build())
-                
                 .build();
     }
     

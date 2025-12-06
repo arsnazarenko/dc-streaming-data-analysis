@@ -157,3 +157,11 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
 
+volumes:
+  kafka1_data:
+    driver: local
+  kafka2_data:
+    driver: local
+  kafka3_data:
+    driver: local
+
