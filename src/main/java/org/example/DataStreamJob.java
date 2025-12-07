@@ -9,6 +9,9 @@ import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
+import org.apache.flink.core.execution.CheckpointingMode;
+import org.apache.flink.runtime.state.CheckpointStorage;
+import org.apache.flink.runtime.state.storage.FileSystemCheckpointStorage;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -62,8 +65,8 @@ public class DataStreamJob {
     
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        
-        env.getConfig().setAutoWatermarkInterval(AUTO_WATERMARK_INTERVAL_MS);
+
+        // env.getConfig().setAutoWatermarkInterval(AUTO_WATERMARK_INTERVAL_MS);
         
         DataStream<MetricEvent> metrics = createKafkaSource(env);
         
@@ -107,17 +110,16 @@ public class DataStreamJob {
         return KafkaSink.<Alert>builder()
                 .setBootstrapServers(DEFAULT_KAFKA_BROKERS)
                 // .setDeliveryGuarantee(DeliveryGuarantee.EXACTLY_ONCE)
+                // .setTransactionalIdPrefix("dc-metrics-alerts-")
                 .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                         .setTopic(ALERTS_TOPIC)
                         .setKeySerializationSchema(new AlertKeySerializer())
                         .setValueSerializationSchema(new AlertSerializer())
                         .build())
-                
-                
                 .build();
     }
     
-private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() {
+ private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() {
         return KafkaSink.<Tuple3<String, String, Double>>builder()
                 .setBootstrapServers(DEFAULT_KAFKA_BROKERS)
                 // .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
@@ -138,7 +140,7 @@ private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() 
                         .setKeySerializationSchema(new SlaComplianceKeySerializer())
                         .setValueSerializationSchema(new SlaComplianceSerializer())
                         .build())
-                
+
                 .build();
     }
     
@@ -151,7 +153,7 @@ private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() 
                         .setKeySerializationSchema(new ZoneLoadKeySerializer())
                         .setValueSerializationSchema(new ZoneLoadSerializer())
                         .build())
-                
+
                 .build();
     }
     
