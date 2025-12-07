@@ -26,11 +26,12 @@ import org.example.serialization.*;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class DataStreamJob {
-    
-    private static final String KAFKA_BROKERS = "kafka1:9092,kafka2:9092,kafka3:9092";
-    private static final String METRICS_TOPIC = "dc_metrics";
+
+    private static final String DEFAULT_KAFKA_BROKERS = Optional.ofNullable(System.getenv("KAFKA_BROKERS")).orElse("localhost:9092");
+    private static final String DEFAULT_METRICS_TOPIC = Optional.ofNullable(System.getenv("TOPIC_NAME")).orElse("dc_metrics");
     private static final String ALERTS_TOPIC = "dc_alerts";
     private static final String HOST_STATUS_TOPIC = "dc_host_status";
     private static final String SLA_COMPLIANCE_TOPIC = "dc_sla_compliance";
@@ -89,22 +90,22 @@ public class DataStreamJob {
     
     private static DataStream<MetricEvent> createKafkaSource(StreamExecutionEnvironment env) {
         KafkaSource<MetricEvent> source = KafkaSource.<MetricEvent>builder()
-                .setBootstrapServers(KAFKA_BROKERS)
-                .setTopics(METRICS_TOPIC)
+                .setBootstrapServers(DEFAULT_KAFKA_BROKERS)
+                .setTopics(DEFAULT_METRICS_TOPIC)
                 .setGroupId(CONSUMER_GROUP)
                 .setStartingOffsets(OffsetsInitializer.latest())
                 .setValueOnlyDeserializer(new MetricEventDeserializer())
                 .build();
-        
-        return env.fromSource(source, 
+
+        return env.fromSource(source,
                 WatermarkStrategy.<MetricEvent>forBoundedOutOfOrderness(Duration.ofSeconds(BOUNDED_OUT_OF_ORDERNESS_SECONDS))
-                .withTimestampAssigner((event, timestamp) -> event.getTimestamp()), 
+                .withTimestampAssigner((event, timestamp) -> event.getTimestamp()),
                 "Kafka Source");
     }
     
     private static KafkaSink<Alert> createAlertSink() {
         return KafkaSink.<Alert>builder()
-                .setBootstrapServers(KAFKA_BROKERS)
+                .setBootstrapServers(DEFAULT_KAFKA_BROKERS)
                 // .setDeliveryGuarantee(DeliveryGuarantee.EXACTLY_ONCE)
                 .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                         .setTopic(ALERTS_TOPIC)
@@ -118,7 +119,7 @@ public class DataStreamJob {
     
 private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() {
         return KafkaSink.<Tuple3<String, String, Double>>builder()
-                .setBootstrapServers(KAFKA_BROKERS)
+                .setBootstrapServers(DEFAULT_KAFKA_BROKERS)
                 // .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                         .setTopic(HOST_STATUS_TOPIC)
@@ -130,7 +131,7 @@ private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() 
     
     private static KafkaSink<Tuple3<String, String, Double>> createSlaComplianceSink() {
         return KafkaSink.<Tuple3<String, String, Double>>builder()
-                .setBootstrapServers(KAFKA_BROKERS)
+                .setBootstrapServers(DEFAULT_KAFKA_BROKERS)
                 // .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                         .setTopic(SLA_COMPLIANCE_TOPIC)
@@ -143,7 +144,7 @@ private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() 
     
     private static KafkaSink<Tuple2<String, Double>> createZoneLoadSink() {
         return KafkaSink.<Tuple2<String, Double>>builder()
-                .setBootstrapServers(KAFKA_BROKERS)
+                .setBootstrapServers(DEFAULT_KAFKA_BROKERS)
                 // .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                         .setTopic(ZONE_LOAD_TOPIC)
@@ -156,7 +157,7 @@ private static KafkaSink<Tuple3<String, String, Double>> createHostStatusSink() 
     
     private static KafkaSink<Tuple2<String, Double>> createCpuTrendSink() {
         return KafkaSink.<Tuple2<String, Double>>builder()
-                .setBootstrapServers(KAFKA_BROKERS)
+                .setBootstrapServers(DEFAULT_KAFKA_BROKERS)
                 // .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                         .setTopic(CPU_TREND_TOPIC)

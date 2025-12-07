@@ -83,6 +83,21 @@ services:
       retries: 5
       start_period: 30s
 
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka-init
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+      kafka3:
+        condition: service_healthy
+    volumes:
+      - ./init-topics.sh:/init-topics.sh
+    command: sh /init-topics.sh
+    restart: "no"
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -105,12 +120,14 @@ services:
     build: dc_generator
     container_name: dc-generator
     depends_on:
-      kafka1:
-        condition: service_healthy
-      kafka2:
-        condition: service_healthy
-      kafka3:
-        condition: service_healthy
+      - kafka-init
+
+      # kafka1:
+      #   condition: service_healthy
+      # kafka2:
+      #   condition: service_healthy
+      # kafka3:
+      #   condition: service_healthy
     environment:
       KAFKA_ADDRESS: "kafka1:9092,kafka2:9092,kafka3:9092"
       TOPIC: dc_metrics
@@ -125,16 +142,16 @@ services:
       - "8081:8081"
     command: jobmanager
     depends_on:
-      kafka1:
-        condition: service_healthy
-      kafka2:
-        condition: service_healthy
-      kafka3:
-        condition: service_healthy
+      - kafka-init
+
+      # kafka1:
+      #   condition: service_healthy
+      # kafka2:
+      #   condition: service_healthy
+      # kafka3:
+      #   condition: service_healthy
     environment:
-      - |
-        FLINK_PROPERTIES=
-        jobmanager.rpc.address: jobmanager
+      FLINK_PROPERTIES: "jobmanager.rpc.address: jobmanager"
 
   taskmanager:
     image: flink:2.1.1
@@ -142,9 +159,7 @@ services:
       - jobmanager
     command: taskmanager
     environment:
-      - |
-        FLINK_PROPERTIES=
-        jobmanager.rpc.address: jobmanager
+      FLINK_PROPERTIES: "jobmanager.rpc.address: jobmanager"
 
   job-submitter:
     build: .
@@ -153,9 +168,10 @@ services:
       - taskmanager
     command: ["bash", "-c", "flink run -d --jobmanager jobmanager:8081 /opt/flink/lib/app.jar"]
     environment:
-      - |
-        FLINK_PROPERTIES=
-        jobmanager.rpc.address: jobmanager
+      KAFKA_BROKERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      TOPIC_NAME: "dc_metrics"
+      FLINK_PROPERTIES: "jobmanager.rpc.address: jobmanager"
+
 
 volumes:
   kafka1_data:
