@@ -63,7 +63,13 @@ docker compose up
 
 > Flink Web Dashboard: http://localhost:8081
 
+> Streaming API webdocket address ws://localhost:8181/ws
+
+> To launch the streaming client, simply open the [streaming_client.html](streaming_api/static/streaming_client.html) file in your browser. It will automatically connect to ws://localhost:8181/ws
+
 4. Stop docker compose:
 ```bash
 docker compose down
 ```
+
+
