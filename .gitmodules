@@ -2,3 +2,8 @@
 	path = dc_generator
 	url = git@github.com:arsnazarenko/dc_generator.git
 	branch = main
+
+[submodule "streaming_api"]
+	path = streaming_api
+	url = git@github.com:arsnazarenko/streaming_api.git
+	branch = main

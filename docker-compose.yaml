@@ -136,6 +136,19 @@ services:
       TIMEOUT: 500
     restart: always
 
+  streaming_api:
+    build: streaming_api
+    container_name: streaming-api
+    environment:
+      KAFKA_ADDRESS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      WS_ADDRESS: "0.0.0.0:8181"
+    depends_on:
+      - kafka-init
+      - job-submitter
+    ports:
+      - "8181:8181"
+    restart: always
+
   jobmanager:
     image: flink:2.1.1
     ports:
